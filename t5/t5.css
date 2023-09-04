@@ -36,13 +36,15 @@ td {
 }
 
 dialog {
+  margin: 0;
   position: fixed;
-  left: 30vw;
-  top: 20vh;
+  left: 50%;
+  top: 50%;
   transform: translate(-50%, -50%);
-  width: 400px;
+  width: 700px;
+  max-height: calc(100% -80px);
   padding: 10px 30px 20px;
-  overflow: hidden;
+  overflow-y: auto;
   border: 1px solid grey;
   border-radius: 8px;;
 }
@@ -64,4 +66,13 @@ dialog button {
   background-color: #29e2c8;
   border-radius: 8px;
 
+}
+
+.meal {
+  display: flex;
+  flex-direction: row;
+}
+
+.meal p:last-child {
+  margin-left: auto;
 }

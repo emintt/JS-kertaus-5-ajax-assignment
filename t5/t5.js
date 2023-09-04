@@ -19,6 +19,17 @@ day's menu for the selected restaurant from the API.
  accurately.
 - Make effective use of CSS for styling and layout.
 10p */
+'use strict';
+async function fetchData(url, options) {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    console.log(response);
+    throw new Error(`Error in request: ${response.status}`);
+  }
+  const json = await response.json();
+  return json;
+}
+
 async function getRestaurants() {
   try {
     const url =
@@ -29,13 +40,25 @@ async function getRestaurants() {
         'Content-Type': 'application/json',
       },
     };
-    const response = await fetch(url, options);
-    if (!response.ok) {
-      throw new Error(`Error in request: ${response.status}`);
-    }
-    const restaurants = await response.json();
-    //console.log(restaurants);
+    const restaurants = await fetchData(url, options);
+    // console.log(restaurants);
     return restaurants;
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
+async function getDailyMenu(id) {
+  try {
+    const url = `https://sodexo-webscrape-r73sdlmfxa-lz.a.run.app/api/v1/restaurants/daily/${id}/fi`;
+    const options = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    const menu = await fetchData(url, options);
+    return menu.courses;
   } catch (error) {
     alert(error.message);
   }
@@ -44,10 +67,6 @@ async function getRestaurants() {
 (async function () {
   const restaurants = await getRestaurants();
   console.log(restaurants);
-  // const restaurants = Object.values(restaurantsObject);
-
-  // console.log(restaurants);
-  // your code here
   restaurants.sort(function (a, b) {
     const nameA = a.name.toLowerCase();
     const nameB = b.name.toLowerCase();
@@ -61,13 +80,16 @@ async function getRestaurants() {
   });
 
   const tbody = document.querySelector('tbody');
-  const trHead = document.querySelector('tr');
-
   const dialog = document.querySelector('dialog');
   const h3 = document.createElement('h3');
   const p1 = document.createElement('p');
   const p2 = document.createElement('p');
   const p3 = document.createElement('p');
+  const div = document.createElement('div');
+  div.className = 'daily-menu-container';
+  const h4 = document.createElement('h4');
+
+  h4.innerText = 'Päivän ruokalista';
 
   const closeButt = document.createElement('button');
   closeButt.innerText = 'Close';
@@ -76,6 +98,9 @@ async function getRestaurants() {
   dialog.appendChild(p1);
   dialog.appendChild(p2);
   dialog.appendChild(p3);
+
+  dialog.appendChild(h4);
+  dialog.appendChild(div);
   dialog.appendChild(closeButt);
 
   for (const [i, r] of restaurants.entries()) {
@@ -103,6 +128,28 @@ async function getRestaurants() {
       p1.innerText = `${restaurants[i].address}, ${restaurants[i].postalCode}, ${restaurants[i].city} `;
       p2.innerText = restaurants[i].phone;
       p3.innerText = restaurants[i].company;
+      (async function () {
+        try {
+          const menu = await getDailyMenu(restaurants[i]._id);
+          document.querySelector('.daily-menu-container').innerHTML = '';
+          for (const meal of menu) {
+            const mealE = document.createElement('div');
+            mealE.className = 'meal';
+            const p4 = document.createElement('p');
+            const p5 = document.createElement('p');
+            const p6 = document.createElement('p');
+            p4.innerText = meal.name;
+            p5.innerText = `(${meal.diets})`;
+            p6.innerText = meal.price;
+            mealE.appendChild(p4);
+            mealE.appendChild(p5);
+            mealE.appendChild(p6);
+            document.querySelector('.daily-menu-container').appendChild(mealE);
+          }
+        } catch (error) {
+          alert(error.message);
+        }
+      })();
 
       dialog.showModal();
     });
